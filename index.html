@@ -4,129 +4,599 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mes Dépenses</title>
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a7d3b">
 <style>
   * { box-sizing: border-box; margin: 0; font-family: sans-serif; }
-  body { background: #f2f4f3; padding-bottom: 24px; }
-  header { background: #0a7d3b; color: #fff; padding: 20px 16px; text-align: center; }
-  header small { opacity: .85; }
-  #total { font-size: 32px; font-weight: bold; margin-top: 4px; }
-  .form { padding: 16px; display: grid; gap: 8px; }
-  input, select { padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background: #fff; }
-  button.add { padding: 14px; background: #0a7d3b; color: #fff; border: 0; border-radius: 8px; font-size: 16px; }
-  #resume { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 8px; }
+  body { background: #f2f4f3; padding-bottom: 80px; color: #222; }
+  .cache { display: none !important; }
+  header { background: #0a7d3b; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+  header small { opacity: .9; display: block; font-size: 13px; }
+  header b { font-size: 19px; }
+  header button { background: rgba(255,255,255,.2); color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .page { padding: 16px; display: grid; gap: 10px; align-content: start; }
+  h3 { color: #0a7d3b; font-size: 16px; }
+  input, select { padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background: #fff; width: 100%; }
+  .btn { display: block; text-align: center; text-decoration: none; padding: 14px; background: #0a7d3b; color: #fff; border: 0; border-radius: 8px; font-size: 16px; width: 100%; }
+  .btn:disabled { opacity: .6; }
+  .btn.clair { background: #fff; color: #0a7d3b; border: 1px solid #0a7d3b; }
+  .lien { background: none; border: 0; color: #0a7d3b; text-decoration: underline; font-size: 14px; padding: 6px; }
+  .carte { background: #fff; border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+  .grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pile { display: grid; gap: 8px; }
+  .stat { background: #fff; border-radius: 12px; padding: 10px; text-align: center; }
+  .stat small { display: block; color: #777; font-size: 12px; margin-bottom: 4px; }
+  .stat b { font-size: 14px; }
+  .stat.grand b { font-size: 24px; }
+  .stat.ok b { color: #0a7d3b; }
+  .stat.neg b { color: #c0392b; }
+  .msg { color: #c0392b; font-size: 14px; text-align: center; }
+  .info { color: #0a7d3b; font-size: 14px; text-align: center; }
+  .note { color: #777; font-size: 13px; }
+  .onglets { display: flex; gap: 8px; }
+  .onglets button { flex: 1; padding: 12px; border: 1px solid #0a7d3b; background: #fff; color: #0a7d3b; border-radius: 8px; font-size: 15px; }
+  .onglets button.actif { background: #0a7d3b; color: #fff; }
+  .mois { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 12px; padding: 4px; }
+  .mois button { background: none; border: 0; font-size: 26px; padding: 6px 16px; color: #0a7d3b; }
+  .puces { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { background: #fff; border-radius: 20px; padding: 8px 12px; font-size: 13px; border: 1px solid #dde; }
   .chip b { color: #0a7d3b; }
-  .filtre { padding: 0 16px 8px; }
-  .filtre select { width: 100%; }
-  ul { list-style: none; padding: 0 16px; }
-  li { background: #fff; padding: 12px; margin-bottom: 8px; border-radius: 8px;
-       display: flex; justify-content: space-between; align-items: center; }
-  li span small { display: block; color: #888; font-size: 12px; }
-  .tag { display: inline-block; background: #e3f4ea; color: #0a7d3b; border-radius: 10px;
-         padding: 2px 8px; font-size: 11px; margin-top: 4px; }
-  .montant { font-weight: bold; margin-right: 10px; }
+  ul { list-style: none; padding: 0; display: grid; gap: 8px; }
+  li { background: #fff; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  li small { display: block; color: #888; font-size: 12px; }
+  .tag { display: inline-block; background: #e3f4ea; color: #0a7d3b; border-radius: 10px; padding: 3px 8px; font-size: 12px; margin: 2px 2px 2px 0; }
+  .tag .sup { font-size: 14px; padding: 0 0 0 4px; }
+  .montant { font-weight: bold; margin-right: 6px; white-space: nowrap; }
   .sup { background: none; border: 0; color: #c0392b; font-size: 20px; }
   .vide { text-align: center; color: #888; padding: 20px; }
+  nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid #ddd; z-index: 10; }
+  nav button { flex: 1; padding: 10px 4px; background: none; border: 0; border-top: 3px solid transparent; font-size: 12px; color: #666; }
+  nav button.actif { color: #0a7d3b; font-weight: bold; border-top-color: #0a7d3b; }
+  #don { position: fixed; right: 0; top: 30%; z-index: 20; background: #f5a623; color: #fff; text-decoration: none;
+         padding: 10px 14px; border-radius: 24px 0 0 24px; font-weight: bold; font-size: 14px;
+         box-shadow: 0 2px 8px rgba(0,0,0,.3); transition: top 1s ease; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.93.0"></script>
 </head>
 <body>
+
+<div id="chargement" class="page"><p class="note" style="text-align:center;margin-top:40px">Chargement…</p></div>
+
+<!-- ===== CONNEXION ===== -->
+<div id="auth" class="page cache">
+  <h2 style="text-align:center;color:#0a7d3b;margin-top:24px">Mes Dépenses</h2>
+  <p class="note" style="text-align:center">Votre compte fonctionne sur tous vos appareils.</p>
+  <div class="onglets">
+    <button id="t-con" class="actif">Connexion</button>
+    <button id="t-ins">Créer un compte</button>
+  </div>
+  <input id="a-prenom" placeholder="Votre prénom" maxlength="30" class="cache" autocomplete="given-name">
+  <input id="a-mail" type="email" placeholder="Adresse e-mail" autocapitalize="none" autocomplete="email">
+  <input id="a-pass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password">
+  <input id="a-pass2" type="password" placeholder="Confirmer le mot de passe" class="cache" autocomplete="new-password">
+  <button class="btn" id="a-ok">Se connecter</button>
+  <button class="lien" id="a-oubli">Mot de passe oublié ?</button>
+  <button class="lien cache" id="a-retour">← Retour à la connexion</button>
+  <div id="a-msg" class="msg"></div>
+  <div id="a-info" class="info"></div>
+</div>
+
+<!-- ===== NOUVEAU MOT DE PASSE ===== -->
+<div id="nouveau" class="page cache">
+  <h2 style="text-align:center;color:#0a7d3b;margin-top:24px">Nouveau mot de passe</h2>
+  <p class="note" style="text-align:center">Choisissez un nouveau mot de passe pour votre compte.</p>
+  <input id="n-pass" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password">
+  <input id="n-pass2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+  <button class="btn" id="n-ok">Enregistrer le mot de passe</button>
+  <button class="lien" id="n-annuler">Annuler</button>
+  <div id="n-msg" class="msg"></div>
+</div>
+
+<!-- ===== APPLICATION ===== -->
+<div id="app" class="cache">
   <header>
-    <small>Total des dépenses</small>
-    <div id="total">0 FCFA</div>
+    <div><small id="h-salut">Bonjour</small><b id="h-nom"></b></div>
+    <button id="deco">Déconnexion</button>
   </header>
 
-  <div class="form">
-    <input id="desc" placeholder="Description (ex: Taxi)">
+  <div id="barre-mois" class="page" style="padding-bottom:0">
+    <div class="mois">
+      <button id="m-prec">‹</button>
+      <b id="mois-lib"></b>
+      <button id="m-suiv">›</button>
+    </div>
+  </div>
+
+  <!-- Onglet Dépenses -->
+  <div id="p-dep" class="page">
+    <div id="stats-dep" class="grille"></div>
+    <div id="avert" class="msg"></div>
+    <h3>Nouvelle dépense</h3>
+    <input id="desc" placeholder="Description (ex: Taxi)" maxlength="200">
     <input id="montant" type="number" inputmode="numeric" placeholder="Montant en FCFA">
+    <input id="date" type="date">
     <select id="cat"></select>
-    <button class="add" id="ajout">Ajouter la dépense</button>
-  </div>
-
-  <div id="resume"></div>
-
-  <div class="filtre">
+    <button class="btn clair" id="nv-cat">+ Ajouter une rubrique</button>
+    <button class="btn" id="ajout">Ajouter la dépense</button>
+    <h3>Résumé par rubrique</h3>
+    <div id="resume" class="puces"></div>
     <select id="filtre"></select>
+    <ul id="liste"></ul>
   </div>
 
-  <ul id="liste"></ul>
+  <!-- Onglet Budget -->
+  <div id="p-bud" class="page cache">
+    <div class="carte">
+      <h3>Définir le budget du mois</h3>
+      <input id="b-val" type="number" inputmode="numeric" placeholder="Budget en FCFA">
+      <button class="btn" id="b-ok">Enregistrer le budget</button>
+    </div>
+    <div id="stats-bud" class="pile"></div>
+    <div class="carte">
+      <h3>Mes rubriques</h3>
+      <div id="rub-liste"></div>
+      <input id="rub-nom" placeholder="Nouvelle rubrique (ex: Éducation)" maxlength="20">
+      <button class="btn clair" id="rub-ok">Ajouter la rubrique</button>
+    </div>
+  </div>
+
+  <!-- Onglet Rapport -->
+  <div id="p-rap" class="page cache">
+    <div id="rap-contenu" class="carte"></div>
+    <button class="btn" id="rap-dl">Télécharger le rapport du mois</button>
+    <p class="note">Le fichier (format CSV) s’ouvre avec Excel, Google Sheets ou WPS Office.</p>
+  </div>
+
+  <!-- Onglet Aide -->
+  <div id="p-aide" class="page cache">
+    <div class="carte">
+      <h3>Mon compte</h3>
+      <p class="note" id="aide-compte"></p>
+    </div>
+    <div class="carte">
+      <h3>Support technique</h3>
+      <p>Un problème ou une question ? Écrivez-nous :</p>
+      <a class="btn" id="aide-wa" target="_blank" rel="noopener">Écrire sur WhatsApp</a>
+      <a class="btn clair" id="aide-mail">Envoyer un e-mail</a>
+    </div>
+    <div class="carte">
+      <h3>Questions fréquentes</h3>
+      <p><b>Où sont mes données ?</b><br>Dans votre compte, en ligne. Connectez-vous avec le même e-mail sur un autre appareil pour les retrouver.</p>
+      <p><b>J’ai oublié mon mot de passe</b><br>Sur l’écran de connexion, touchez « Mot de passe oublié ? » et suivez le lien reçu par e-mail.</p>
+      <p><b>Le budget ne change pas ?</b><br>C’est voulu : le budget reste fixe, et c’est la ligne « Reste » qui diminue à chaque dépense.</p>
+    </div>
+  </div>
+
+  <nav>
+    <button id="n-dep" class="actif">💸<br>Dépenses</button>
+    <button id="n-bud">🎯<br>Budget</button>
+    <button id="n-rap">📄<br>Rapport</button>
+    <button id="n-aide">🛟<br>Aide</button>
+  </nav>
+</div>
+
+<!-- Bouton don -->
+<a id="don" target="_blank" rel="noopener">❤️ Don</a>
 
 <script>
-  const CATEGORIES = ['Transport', 'Nourriture', 'Factures', 'Santé', 'Loisirs', 'Autre'];
-  let depenses = JSON.parse(localStorage.getItem('depenses') || '[]');
-  depenses.forEach(d => { if (!d.cat) d.cat = 'Autre'; });
+  if (!window.supabase) {
+    document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif">Une connexion internet est nécessaire pour charger l’application. Réessayez.</p>';
+    throw new Error('Bibliothèque Supabase non chargée');
+  }
+
+  // ====== VOS INFORMATIONS ======
+  const CONFIG = {
+    SUPABASE_URL: 'https://tnwngndobavpacluedkn.supabase.co',
+    SUPABASE_KEY: 'sb_publishable_0E2DKak7vl-NKUvU9mcH6A_KcOVsKsR',
+    SITE: 'https://matheis-rey.github.io/depense/',
+    WAVE: 'https://pay.wave.com/m/M_ci_1Fw9ZLtLUwO0/c/ci/',
+    WHATSAPP: '2250709047668',
+    EMAIL: 'armandzpassur@gmail.com'
+  };
+  // ==============================
+
+  const CATS_DEFAUT = ['Transport', 'Nourriture', 'Factures', 'Santé', 'Loisirs', 'Épargne', 'Famille', 'Autre'];
+  const NOMS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
   const $ = id => document.getElementById(id);
-  const liste = $('liste'), totalEl = $('total'), resume = $('resume');
-  const desc = $('desc'), montant = $('montant'), cat = $('cat'), filtre = $('filtre');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fcfa = n => Math.round(n).toLocaleString('fr-FR') + ' FCFA';
+  const pad = n => String(n).padStart(2, '0');
+  const dateFr = s => s.split('-').reverse().join('/');
+  const libMois = m => NOMS[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4);
 
-  cat.innerHTML = CATEGORIES.map(c => `<option>${c}</option>`).join('');
-  filtre.innerHTML = '<option value="">Toutes les catégories</option>' +
-    CATEGORIES.map(c => `<option>${c}</option>`).join('');
-
-  const fcfa = n => n.toLocaleString('fr-FR') + ' FCFA';
-  const sauver = () => localStorage.setItem('depenses', JSON.stringify(depenses));
-
-  function afficher() {
-    totalEl.textContent = fcfa(depenses.reduce((s, d) => s + d.montant, 0));
-
-    // Total par catégorie
-    const parCat = {};
-    depenses.forEach(d => parCat[d.cat] = (parCat[d.cat] || 0) + d.montant);
-    resume.innerHTML = Object.keys(parCat)
-      .map(c => `<div class="chip">${c} : <b>${fcfa(parCat[c])}</b></div>`).join('');
-
-    // Liste filtrée
-    const f = filtre.value;
-    const lignes = depenses
-      .map((d, i) => ({ d, i }))
-      .filter(x => !f || x.d.cat === f)
-      .reverse();
-
-    if (lignes.length === 0) {
-      liste.innerHTML = '<div class="vide">Aucune dépense</div>';
-      return;
-    }
-
-    liste.innerHTML = lignes.map(({ d, i }) => `
-      <li>
-        <span>${d.desc}<small>${d.date}</small><span class="tag">${d.cat}</span></span>
-        <div>
-          <span class="montant">${fcfa(d.montant)}</span>
-          <button class="sup" onclick="supprimer(${i})">✕</button>
-        </div>
-      </li>`).join('');
+  function aujourdhui() {
+    const t = new Date();
+    return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+  }
+  function bornes(m) {
+    let a = +m.slice(0, 4), n = +m.slice(5, 7) + 1;
+    if (n > 12) { n = 1; a++; }
+    return [m + '-01', a + '-' + pad(n) + '-01'];
   }
 
-  function supprimer(i) {
-    depenses.splice(i, 1);
-    sauver();
-    afficher();
+  // Lecture de l'adresse AVANT de créer le client (lien de récupération)
+  let enRecuperation = /type=recovery/.test(location.hash);
+  const lienExpire = /error_code=|error=access_denied/.test(location.hash);
+
+  const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+    auth: { flowType: 'implicit', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+
+  let user = null, d = null;
+  let mois = aujourdhui().slice(0, 7);
+
+  function ecran(n) {
+    ['chargement', 'auth', 'nouveau', 'app'].forEach(x => $(x).classList.toggle('cache', x !== n));
   }
 
-  $('ajout').onclick = () => {
-    const d = desc.value.trim();
-    const m = parseInt(montant.value, 10);
-    if (!d || !m || m <= 0) {
-      alert('Saisissez une description et un montant valide.');
-      return;
+  function traduire(e) {
+    const m = ((e && e.message) || '').toLowerCase();
+    if (m.includes('invalid login')) return 'E-mail ou mot de passe incorrect.';
+    if (m.includes('already registered') || m.includes('already been registered')) return 'Un compte existe déjà avec cet e-mail.';
+    if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Trop de tentatives. Réessayez dans quelques minutes.';
+    if (m.includes('password should be')) return 'Mot de passe trop court (6 caractères minimum).';
+    if (m.includes('not authorized')) return 'L’envoi d’e-mails n’est pas encore activé pour cette adresse. Contactez le support.';
+    if (m.includes('failed to fetch') || m.includes('network')) return 'Pas de connexion internet. Réessayez.';
+    return 'Une erreur est survenue : ' + ((e && e.message) || 'inconnue');
+  }
+  function erreur(e) { alert(traduire(e)); }
+
+  // ---------- Connexion / inscription / mot de passe oublié ----------
+  let mode = 'con';
+  function modeAuth(m) {
+    mode = m;
+    $('a-prenom').classList.toggle('cache', m !== 'ins');
+    $('a-pass').classList.toggle('cache', m === 'oubli');
+    $('a-pass2').classList.toggle('cache', m !== 'ins');
+    $('a-oubli').classList.toggle('cache', m !== 'con');
+    $('a-retour').classList.toggle('cache', m !== 'oubli');
+    $('a-ok').textContent = { con: 'Se connecter', ins: 'Créer mon compte', oubli: 'Envoyer le lien' }[m];
+    $('t-con').classList.toggle('actif', m !== 'ins');
+    $('t-ins').classList.toggle('actif', m === 'ins');
+    $('a-msg').textContent = '';
+    $('a-info').textContent = '';
+  }
+  $('t-con').onclick = () => modeAuth('con');
+  $('t-ins').onclick = () => modeAuth('ins');
+  $('a-oubli').onclick = () => modeAuth('oubli');
+  $('a-retour').onclick = () => modeAuth('con');
+
+  $('a-ok').onclick = async () => {
+    const mail = $('a-mail').value.trim().toLowerCase();
+    const mdp = $('a-pass').value;
+    const msg = t => { $('a-msg').textContent = t; $('a-info').textContent = ''; };
+    msg('');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { msg('Saisissez une adresse e-mail valide.'); return; }
+    if (mode !== 'oubli' && mdp.length < 6) { msg('Mot de passe : 6 caractères minimum.'); return; }
+    let prenom = '';
+    if (mode === 'ins') {
+      prenom = $('a-prenom').value.trim();
+      if (prenom.length < 2) { msg('Saisissez votre prénom.'); return; }
+      if (mdp !== $('a-pass2').value) { msg('Les deux mots de passe sont différents.'); return; }
     }
-    depenses.push({
-      desc: d.replace(/</g, '&lt;'),
-      montant: m,
-      cat: cat.value,
-      date: new Date().toLocaleDateString('fr-FR')
-    });
-    sauver();
-    desc.value = '';
-    montant.value = '';
-    afficher();
+    $('a-ok').disabled = true;
+    try {
+      if (mode === 'oubli') {
+        const { error } = await sb.auth.resetPasswordForEmail(mail, { redirectTo: CONFIG.SITE });
+        if (error) throw error;
+        $('a-info').textContent = 'Si cette adresse a un compte, un e-mail avec un lien vient d’être envoyé. Pensez à regarder dans les courriers indésirables.';
+      } else if (mode === 'ins') {
+        const { data, error } = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { prenom: prenom } } });
+        if (error) throw error;
+        if (!data.session) $('a-info').textContent = 'Compte créé. Vérifiez votre e-mail pour confirmer votre adresse.';
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email: mail, password: mdp });
+        if (error) throw error;
+      }
+    } catch (e) {
+      msg(traduire(e));
+    }
+    $('a-ok').disabled = false;
   };
 
-  filtre.onchange = afficher;
+  // Nouveau mot de passe (après le lien reçu par e-mail)
+  $('n-ok').onclick = async () => {
+    const p = $('n-pass').value;
+    const msg = $('n-msg');
+    msg.textContent = '';
+    if (p.length < 6) { msg.textContent = 'Mot de passe : 6 caractères minimum.'; return; }
+    if (p !== $('n-pass2').value) { msg.textContent = 'Les deux mots de passe sont différents.'; return; }
+    $('n-ok').disabled = true;
+    const { error } = await sb.auth.updateUser({ password: p });
+    $('n-ok').disabled = false;
+    if (error) { msg.textContent = traduire(error); return; }
+    enRecuperation = false;
+    history.replaceState(null, '', location.pathname);
+    $('n-pass').value = ''; $('n-pass2').value = '';
+    const { data } = await sb.auth.getSession();
+    if (data.session) ouvrirSession(data.session.user);
+    alert('Votre mot de passe a été modifié.');
+  };
+  $('n-annuler').onclick = async () => {
+    enRecuperation = false;
+    history.replaceState(null, '', location.pathname);
+    await sb.auth.signOut();
+  };
+
+  $('deco').onclick = async () => {
+    await sb.auth.signOut();
+    $('a-pass').value = ''; $('a-pass2').value = '';
+  };
+
+  sb.auth.onAuthStateChange((event, session) => {
+    setTimeout(() => {
+      if (event === 'PASSWORD_RECOVERY' || (enRecuperation && session)) {
+        enRecuperation = true;
+        ecran('nouveau');
+        return;
+      }
+      if (session && session.user) {
+        if (!user || user.id !== session.user.id) ouvrirSession(session.user);
+      } else {
+        user = null; d = null;
+        ecran('auth');
+      }
+    }, 0);
+  });
+
+  // ---------- Salutation ----------
+  function salut() {
+    const h = new Date().getHours();
+    let s = 'Bonsoir 🌙';
+    if (h >= 5 && h < 12) s = 'Bonjour ☀️';
+    else if (h >= 12 && h < 18) s = 'Bon après-midi 🌤️';
+    let nom = d && d.prenom ? d.prenom.trim() : '';
+    nom = nom ? nom.charAt(0).toUpperCase() + nom.slice(1) : 'Mes Dépenses';
+    $('h-salut').textContent = s;
+    $('h-nom').textContent = nom;
+  }
+  setInterval(() => { if (user && d) salut(); }, 60000);
+
+  // ---------- Session et chargement des données ----------
+  async function ouvrirSession(u) {
+    user = u;
+    d = { prenom: (u.user_metadata && u.user_metadata.prenom) || '', cats: [], depenses: [], budget: 0 };
+    mois = aujourdhui().slice(0, 7);
+    $('date').value = aujourdhui();
+    $('aide-compte').textContent = 'Connecté avec : ' + (u.email || '');
+    ecran('app');
+    onglet('dep');
+    salut();
+    tout();
+    try {
+      const { data, error } = await sb.from('profils').select('prenom,cats').eq('id', u.id).maybeSingle();
+      if (error) throw error;
+      if (user && user.id === u.id && data) {
+        if (data.prenom) d.prenom = data.prenom;
+        d.cats = data.cats || [];
+      }
+    } catch (e) { erreur(e); }
+    if (!user || user.id !== u.id) return;
+    salut();
+    await chargerMois();
+  }
+
+  async function chargerMois() {
+    if (!user) return;
+    const m = mois, uid = user.id;
+    const b = bornes(m);
+    try {
+      const r1 = await sb.from('depenses')
+        .select('id,description,montant,rubrique,date')
+        .gte('date', b[0]).lt('date', b[1])
+        .order('date', { ascending: false }).order('id', { ascending: false });
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('budgets').select('montant').eq('mois', m).maybeSingle();
+      if (r2.error) throw r2.error;
+      if (!user || user.id !== uid || m !== mois) return;
+      d.depenses = r1.data.map(x => ({ id: x.id, desc: x.description, montant: x.montant, cat: x.rubrique, date: x.date }));
+      d.budget = r2.data ? r2.data.montant : 0;
+    } catch (e) { erreur(e); }
+    tout();
+  }
+
+  const catsListe = () => CATS_DEFAUT.concat(d.cats);
+  const totalMois = () => d.depenses.reduce((s, x) => s + x.montant, 0);
+  function parCat(l) {
+    const r = {};
+    l.forEach(x => { r[x.cat] = (r[x.cat] || 0) + x.montant; });
+    return r;
+  }
+
+  // ---------- Navigation ----------
+  function onglet(n) {
+    ['dep', 'bud', 'rap', 'aide'].forEach(x => {
+      $('p-' + x).classList.toggle('cache', x !== n);
+      $('n-' + x).classList.toggle('actif', x === n);
+    });
+    $('barre-mois').classList.toggle('cache', n === 'aide');
+    window.scrollTo(0, 0);
+  }
+  ['dep', 'bud', 'rap', 'aide'].forEach(x => { $('n-' + x).onclick = () => onglet(x); });
+
+  function decaler(n) {
+    let a = +mois.slice(0, 4), m = +mois.slice(5, 7) + n;
+    if (m < 1) { m = 12; a--; }
+    if (m > 12) { m = 1; a++; }
+    mois = a + '-' + pad(m);
+    d.depenses = []; d.budget = 0;
+    tout();
+    chargerMois();
+  }
+  $('m-prec').onclick = () => decaler(-1);
+  $('m-suiv').onclick = () => decaler(1);
+
+  // ---------- Affichage ----------
+  function tout() {
+    if (!d) return;
+    $('mois-lib').textContent = libMois(mois);
+    const b = d.budget, t = totalMois(), r = b - t;
+    const cl = r < 0 ? 'neg' : 'ok';
+
+    $('stats-dep').innerHTML =
+      '<div class="stat"><small>Budget</small><b>' + fcfa(b) + '</b></div>' +
+      '<div class="stat"><small>Dépensé</small><b>' + fcfa(t) + '</b></div>' +
+      '<div class="stat ' + cl + '"><small>Reste</small><b>' + fcfa(r) + '</b></div>';
+
+    $('stats-bud').innerHTML =
+      '<div class="stat grand"><small>Budget de ' + libMois(mois) + '</small><b>' + fcfa(b) + '</b></div>' +
+      '<div class="stat grand ' + cl + '"><small>Reste</small><b>' + fcfa(r) + '</b><small style="margin-top:4px">Dépensé : ' + fcfa(t) + '</small></div>';
+
+    $('avert').textContent = b === 0 ? 'Définissez votre budget dans l’onglet Budget.'
+      : (r < 0 ? 'Attention : budget dépassé de ' + fcfa(-r) + '.' : '');
+
+    $('b-val').placeholder = 'Budget de ' + libMois(mois) + ' en FCFA';
+
+    const l = catsListe();
+    const c = $('cat').value, f = $('filtre').value;
+    $('cat').innerHTML = l.map(x => '<option>' + esc(x) + '</option>').join('');
+    $('filtre').innerHTML = '<option value="">Toutes les rubriques</option>' + l.map(x => '<option>' + esc(x) + '</option>').join('');
+    if (l.includes(c)) $('cat').value = c;
+    if (l.includes(f)) $('filtre').value = f;
+
+    const par = parCat(d.depenses);
+    $('resume').innerHTML = Object.keys(par).map(k => '<div class="chip">' + esc(k) + ' : <b>' + fcfa(par[k]) + '</b></div>').join('')
+      || '<div class="note">Aucune dépense ce mois-ci.</div>';
+
+    const fl = $('filtre').value;
+    const lignes = d.depenses.filter(x => !fl || x.cat === fl);
+    $('liste').innerHTML = lignes.length ? lignes.map(x =>
+      '<li><span>' + esc(x.desc) + '<small>' + dateFr(x.date) + '</small><span class="tag">' + esc(x.cat) + '</span></span>' +
+      '<div><span class="montant">' + fcfa(x.montant) + '</span><button class="sup" onclick="supprimer(' + x.id + ')">✕</button></div></li>'
+    ).join('') : '<div class="vide">Aucune dépense</div>';
+
+    $('rub-liste').innerHTML = CATS_DEFAUT.map(x => '<span class="tag">' + esc(x) + '</span>').join(' ') +
+      (d.cats.length ? '<p class="note" style="margin-top:8px">Vos rubriques (✕ pour supprimer) :</p>' +
+        d.cats.map((x, i) => '<span class="tag">' + esc(x) + '<button class="sup" onclick="supprimerCat(' + i + ')">✕</button></span>').join(' ') : '');
+
+    $('rap-contenu').innerHTML = '<h3>' + libMois(mois) + '</h3>' +
+      '<p>Budget : <b>' + fcfa(b) + '</b></p><p>Dépensé : <b>' + fcfa(t) + '</b></p><p>Reste : <b>' + fcfa(r) + '</b></p>' +
+      '<p>Nombre de dépenses : <b>' + d.depenses.length + '</b></p>' +
+      (Object.keys(par).length ? '<hr>' + Object.keys(par).map(k => '<p>' + esc(k) + ' : <b>' + fcfa(par[k]) + '</b></p>').join('') : '');
+  }
+  $('filtre').onchange = tout;
+
+  // ---------- Actions ----------
+  $('ajout').onclick = async () => {
+    const desc = $('desc').value.trim();
+    const m = parseInt($('montant').value, 10);
+    const date = $('date').value || aujourdhui();
+    if (!desc || !m || m <= 0) { alert('Saisissez une description et un montant valide.'); return; }
+    $('ajout').disabled = true;
+    try {
+      const { error } = await sb.from('depenses').insert({ description: desc, montant: m, rubrique: $('cat').value, date: date });
+      if (error) throw error;
+      $('desc').value = ''; $('montant').value = ''; $('date').value = aujourdhui();
+      mois = date.slice(0, 7);
+      await chargerMois();
+    } catch (e) { erreur(e); }
+    $('ajout').disabled = false;
+  };
+
+  async function supprimer(id) {
+    if (!confirm('Supprimer cette dépense ?')) return;
+    try {
+      const { error } = await sb.from('depenses').delete().eq('id', id);
+      if (error) throw error;
+      await chargerMois();
+    } catch (e) { erreur(e); }
+  }
+
+  $('b-ok').onclick = async () => {
+    const v = parseInt($('b-val').value, 10);
+    if (isNaN(v) || v < 0) { alert('Saisissez un budget valide.'); return; }
+    try {
+      const { error } = await sb.from('budgets').upsert({ user_id: user.id, mois: mois, montant: v }, { onConflict: 'user_id,mois' });
+      if (error) throw error;
+      d.budget = v;
+      $('b-val').value = '';
+      tout();
+    } catch (e) { erreur(e); }
+  };
+
+  async function sauverCats(nouvelle) {
+    const { error } = await sb.from('profils').upsert({ id: user.id, prenom: d.prenom || '', cats: nouvelle }, { onConflict: 'id' });
+    if (error) throw error;
+    d.cats = nouvelle;
+    tout();
+  }
+
+  async function ajouterCat(nom) {
+    nom = (nom || '').trim();
+    if (!nom) return false;
+    if (nom.length > 20) { alert('20 caractères maximum.'); return false; }
+    if (catsListe().some(c => c.toLowerCase() === nom.toLowerCase())) { alert('Cette rubrique existe déjà.'); return false; }
+    try { await sauverCats(d.cats.concat([nom])); return true; }
+    catch (e) { erreur(e); return false; }
+  }
+  $('nv-cat').onclick = async () => {
+    const n = prompt('Nom de la nouvelle rubrique (ex: Éducation) :');
+    if (await ajouterCat(n)) $('cat').value = n.trim();
+  };
+  $('rub-ok').onclick = async () => { if (await ajouterCat($('rub-nom').value)) $('rub-nom').value = ''; };
+
+  async function supprimerCat(i) {
+    if (!confirm('Supprimer la rubrique « ' + d.cats[i] + ' » ? Les dépenses déjà saisies sont conservées.')) return;
+    try { await sauverCats(d.cats.filter((x, k) => k !== i)); }
+    catch (e) { erreur(e); }
+  }
+
+  // ---------- Rapport ----------
+  function telecharger(nom, contenu) {
+    const blob = new Blob(['\ufeff' + contenu], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nom;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  }
+
+  $('rap-dl').onclick = () => {
+    const l = d.depenses.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+    const b = d.budget, t = totalMois();
+    const cel = v => {
+      if (typeof v === 'number') return v;
+      let s = String(v);
+      if (/^[=+\-@]/.test(s)) s = "'" + s;
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
+    const lignes = [
+      ['Rapport mensuel - Mes Dépenses'],
+      ['Utilisateur', (d.prenom || '') + ' (' + (user.email || '') + ')'],
+      ['Mois', libMois(mois)],
+      ['Budget (FCFA)', b],
+      ['Total dépensé (FCFA)', t],
+      ['Reste (FCFA)', b - t],
+      [],
+      ['Date', 'Description', 'Rubrique', 'Montant (FCFA)']
+    ].concat(
+      l.map(x => [dateFr(x.date), x.desc, x.cat, x.montant]),
+      [[], ['Rubrique', 'Total (FCFA)']],
+      Object.entries(parCat(l))
+    );
+    const csv = lignes.map(r => r.map(cel).join(';')).join('\r\n');
+    telecharger('rapport-' + mois + '.csv', csv);
+  };
+
+  // ---------- Support et don ----------
+  $('aide-wa').href = 'https://wa.me/' + CONFIG.WHATSAPP + '?text=' + encodeURIComponent('Bonjour, j’ai besoin d’aide avec Mes Dépenses.');
+  $('aide-mail').href = 'mailto:' + CONFIG.EMAIL + '?subject=' + encodeURIComponent('Support - Mes Dépenses');
+  $('don').href = CONFIG.WAVE;
+
+  const POS = ['18%', '38%', '58%', '28%', '48%'];
+  let ip = 0;
+  setInterval(() => { ip = (ip + 1) % POS.length; $('don').style.top = POS[ip]; }, 5000);
+
+  // ---------- Démarrage ----------
+  modeAuth('con');
+  if (lienExpire) {
+    modeAuth('oubli');
+    $('a-msg').textContent = 'Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.';
+    history.replaceState(null, '', location.pathname);
+  }
+  setTimeout(() => { if (!$('chargement').classList.contains('cache')) ecran('auth'); }, 5000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-  afficher();
 </script>
 </body>
-    </html>
+</html>
