@@ -79,7 +79,14 @@
   .sw-rub.sel { box-shadow: 0 0 0 3px #222; }
   .mini-pal .defaut { grid-column: 1 / -1; }
   .pt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-  .rep-top input { width: 130px; padding: 10px; font-size: 15px; }
+  .rep-montant { font-size: 14px; color: #444; white-space: nowrap; }
+  .crayon { background: none; border: 0; font-size: 18px; padding: 4px 6px; flex: none; }
+  .rep-edit { display: flex; gap: 8px; align-items: center; }
+  .rep-edit input { flex: 1; width: auto; min-width: 0; padding: 10px; font-size: 16px; }
+  .ok-rub, .annuler-rub { border: 0; border-radius: 8px; padding: 10px 14px; font-size: 18px; flex: none; }
+  .ok-rub { background: var(--fond); color: #fff; }
+  .annuler-rub { background: #eee; color: #444; }
+  .rep .apercu { color: #555; font-size: 12px; line-height: 1.6; }
   .rep small { color: #777; font-size: 12px; }
   .barre { height: 8px; background: #e6e6e6; border-radius: 4px; overflow: hidden; }
   .barre i { display: block; height: 100%; background: var(--sc, var(--prim)); }
@@ -189,7 +196,7 @@
     <div id="stats-bud" class="pile"></div>
     <div class="carte">
       <h3>Répartition par rubrique</h3>
-      <p class="note">Facultatif : fixez un budget pour chaque rubrique. Touchez la pastille de couleur d’une rubrique pour changer sa couleur : elle est reprise dans les graphiques.</p>
+      <p class="note">Facultatif : fixez un budget pour chaque rubrique. Touchez ✏️ pour modifier le budget d’une rubrique : le budget général et le reste sont recalculés. Touchez la pastille pour changer sa couleur (reprise dans les graphiques).</p>
       <div id="rep-liste"></div>
       <p id="rep-total" class="note"></p>
     </div>
@@ -390,6 +397,8 @@
   let mois = aujourdhui().slice(0, 7);
   let sync = false, syncDemandee = false;
   let rubOuverte = null;
+  let rubEdition = null;   // { nom, valeur } : rubrique dont on modifie le budget
+  let focusRub = false;
 
   // Couleur d'une rubrique : celle choisie par l'utilisateur, sinon une couleur par défaut
   function couleurRub(nom) {
@@ -832,7 +841,7 @@
     });
     $('barre-mois').classList.toggle('cache', n === 'aide' || n === 'profil');
     window.scrollTo(0, 0);
-    rubOuverte = null;
+    rubOuverte = null; rubEdition = null;
     if (d) {
       tout();
       if (n === 'aide') chargerReclamations();
@@ -946,10 +955,15 @@
       const pct = bud > 0 ? Math.min(100, dep / bud * 100) : 0;
       const st = statutBudget(bud, dep);
       const col = couleurRub(nom);
+      const edition = rubEdition && rubEdition.nom === nom;
       return '<div class="rep s-' + st + '"><div class="rep-top">' +
         '<button class="pastille" data-c="' + esc(nom) + '" style="background:' + col + '" aria-label="Changer la couleur de ' + esc(nom) + '"></button>' +
         '<span>' + esc(nom) + '</span>' +
-        '<input class="rep-in" type="number" inputmode="numeric" placeholder="Budget" data-r="' + esc(nom) + '" value="' + (bud || '') + '"></div>' +
+        '<span class="rep-montant">' + (bud > 0 ? fcfa(bud) : 'Non défini') + '</span>' +
+        '<button class="crayon" data-r="' + esc(nom) + '" aria-label="Modifier le budget de ' + esc(nom) + '">✏️</button></div>' +
+        (edition ? '<div class="rep-edit"><input class="rep-in" type="number" inputmode="numeric" placeholder="Nouveau montant" value="' + esc(rubEdition.valeur) + '">' +
+          '<button class="ok-rub" aria-label="Valider">✔</button><button class="annuler-rub" aria-label="Annuler">✕</button></div>' +
+          '<small class="apercu">' + apercuRub(nom, rubEdition.valeur) + '</small>' : '') +
         (rubOuverte === nom ? miniPalette(nom, col) : '') +
         (bud > 0 ? '<div class="barre"><i style="width:' + pct + '%"></i></div>' : '') +
         '<small>Dépensé : ' + fcfa(dep) + (bud > 0 ? ' · Reste : <b>' + fcfa(reste) + '</b>' : '') + '</small></div>';
@@ -957,6 +971,57 @@
     const b = d.budget;
     $('rep-total').innerHTML = 'Réparti : <b>' + fcfa(somme) + '</b>' +
       (b ? ' sur ' + fcfa(b) + ' (non réparti : <b class="' + (b - somme < 0 ? 'rouge' : '') + '">' + fcfa(b - somme) + '</b>)' : '');
+    if (focusRub) {
+      focusRub = false;
+      const champ = $('rep-liste').querySelector('.rep-in');
+      if (champ) champ.focus();
+    }
+  }
+
+  // Nouveau budget général après modification du budget d'une rubrique :
+  // - rubrique déjà budgétée, nouveau montant > 0 : le budget général varie du même montant ;
+  // - premier budget (ou retrait) : on puise dans la part non répartie, le budget général ne grandit
+  //   que si la somme des rubriques le dépasserait ;
+  // - budget général pas encore défini : il devient la somme des rubriques.
+  function calculerNouveauBudget(nom, v) {
+    const ancien = d.budrub[nom] || 0;
+    const somme = Object.keys(d.budrub).reduce((s, k) => s + d.budrub[k], 0);
+    const sommeApres = somme - ancien + v;
+    let general = d.budget;
+    if (general <= 0) general = sommeApres;
+    else if (ancien > 0 && v > 0) general = general + (v - ancien);
+    else general = Math.max(general, sommeApres);
+    return Math.max(0, general);
+  }
+  function apercuRub(nom, texte) {
+    const t = String(texte).trim();
+    if (t === '') return 'Laissez vide pour retirer le budget de cette rubrique.';
+    const v = parseInt(t, 10);
+    if (isNaN(v) || v < 0) return 'Saisissez un montant valide.';
+    const nouveau = calculerNouveauBudget(nom, v);
+    const diff = nouveau - d.budget;
+    const t0 = totalMois();
+    return 'Budget général : ' + fcfa(d.budget) + ' → <b>' + fcfa(nouveau) + '</b>' +
+      (diff ? ' (' + (diff > 0 ? '+' : '−') + fcfa(Math.abs(diff)) + ')' : ' (inchangé)') +
+      '<br>Reste : ' + fcfa(d.budget - t0) + ' → <b>' + fcfa(nouveau - t0) + '</b>';
+  }
+  function quitterChamp() {
+    const a = document.activeElement;
+    if (a && a.blur && a !== document.body) a.blur();
+  }
+  function validerRub() {
+    if (!rubEdition) return;
+    const nom = rubEdition.nom;
+    const t = String(rubEdition.valeur).trim();
+    const v = t === '' ? 0 : parseInt(t, 10);
+    if (isNaN(v) || v < 0) { alert('Saisissez un montant valide.'); return; }
+    quitterChamp();
+    const nouveau = calculerNouveauBudget(nom, v);
+    const sansChangement = v === (d.budrub[nom] || 0) && nouveau === d.budget;
+    rubEdition = null;
+    if (sansChangement) { tout(); return; }
+    if (nouveau !== d.budget) ajouterOp({ op: 'bud', mois: mois, montant: nouveau });
+    ajouterOp({ op: 'brub', mois: mois, rubrique: nom, montant: v > 0 ? v : null });
   }
   function miniPalette(nom, col) {
     return '<div class="mini-pal">' + PALETTE_RUB.map(p =>
@@ -974,16 +1039,30 @@
   }
   $('rep-liste').addEventListener('click', e => {
     const pastille = e.target.closest('.pastille');
-    if (pastille) { rubOuverte = rubOuverte === pastille.dataset.c ? null : pastille.dataset.c; tout(); return; }
+    if (pastille) { quitterChamp(); rubEdition = null; rubOuverte = rubOuverte === pastille.dataset.c ? null : pastille.dataset.c; tout(); return; }
+    const crayon = e.target.closest('.crayon');
+    if (crayon) {
+      const nom = crayon.dataset.r;
+      quitterChamp();
+      rubOuverte = null;
+      rubEdition = (rubEdition && rubEdition.nom === nom) ? null : { nom: nom, valeur: d.budrub[nom] ? String(d.budrub[nom]) : '' };
+      focusRub = !!rubEdition;
+      tout();
+      return;
+    }
+    if (e.target.closest('.ok-rub')) { validerRub(); return; }
+    if (e.target.closest('.annuler-rub')) { quitterChamp(); rubEdition = null; tout(); return; }
     const choix = e.target.closest('.sw-rub, .defaut');
     if (choix) choisirCouleurRub(choix.dataset.c, choix.dataset.h);
   });
-  $('rep-liste').addEventListener('change', e => {
-    const el = e.target;
-    if (!el.classList.contains('rep-in')) return;
-    const v = el.value.trim() === '' ? null : parseInt(el.value, 10);
-    if (v !== null && (isNaN(v) || v < 0)) { alert('Saisissez un montant valide.'); tout(); return; }
-    ajouterOp({ op: 'brub', mois: mois, rubrique: el.dataset.r, montant: v });
+  $('rep-liste').addEventListener('input', e => {
+    if (!e.target.classList.contains('rep-in') || !rubEdition) return;
+    rubEdition.valeur = e.target.value;
+    const ap = $('rep-liste').querySelector('.apercu');
+    if (ap) ap.innerHTML = apercuRub(rubEdition.nom, rubEdition.valeur);
+  });
+  $('rep-liste').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('rep-in')) { e.preventDefault(); validerRub(); }
   });
 
   // ---------- Analyse ----------
