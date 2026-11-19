@@ -1,4 +1,4 @@
-const CACHE = 'depenses-v5';
+const CACHE = 'depenses-v6';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 const LIB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.93.0';
 
@@ -22,10 +22,12 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
+  // Bibliothèque Supabase : servie depuis le cache pour fonctionner hors connexion
   if (url.href === LIB) {
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
     return;
   }
+  // Tout ce qui n'est pas sur ce site (données Supabase, Wave...) passe directement par le réseau
   if (url.origin !== location.origin) return;
 
   e.respondWith(
