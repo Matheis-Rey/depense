@@ -28,6 +28,9 @@
   .btn { display: block; text-align: center; text-decoration: none; padding: 14px; background: var(--fond); color: #fff; border: 0; border-radius: 8px; font-size: 16px; width: 100%; }
   .btn:disabled { opacity: .6; }
   .btn.clair { background: #fff; color: var(--prim); border: 1px solid var(--prim); }
+  .mdp { position: relative; }
+  .mdp input { padding-right: 54px; }
+  .oeil { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: #777; padding: 10px 12px; line-height: 0; }
   .lien { background: none; border: 0; color: var(--prim); text-decoration: underline; font-size: 14px; padding: 6px; }
   .carte { background: #fff; border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
   .grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -36,9 +39,18 @@
   .stat small { display: block; color: #777; font-size: 12px; margin-bottom: 4px; }
   .stat b { font-size: 14px; }
   .stat.grand b { font-size: 24px; }
-  .stat.ok b { color: var(--prim); }
-  .stat.neg b, .rouge { color: #c0392b; }
+  .rouge { color: #c0392b; }
+  /* Couleurs d'état du budget : vert jusqu'à 75 %, jaune de 76 à 100 %, rouge au-delà */
+  .s-vert { --sc: #2e7d32; --sct: #2e7d32; }
+  .s-jaune { --sc: #f2b01e; --sct: #b07a00; }
+  .s-rouge { --sc: #c62828; --sct: #c62828; }
+  .s-neutre { --sc: #9e9e9e; --sct: #555; }
+  .stat.s-vert b, .stat.s-jaune b, .stat.s-rouge b { color: var(--sct); }
+  .stat.s-vert, .stat.s-jaune, .stat.s-rouge { border-bottom: 4px solid var(--sc); }
+  .jauge { display: grid; gap: 4px; }
+  .jauge small { display: block; text-align: center; font-size: 13px; font-weight: bold; color: var(--sct); }
   .msg { color: #c0392b; font-size: 14px; text-align: center; }
+  .msg.s-jaune { color: var(--sct); }
   .info { color: var(--prim); font-size: 14px; text-align: center; }
   .note { color: #777; font-size: 13px; }
   .onglets { display: flex; gap: 8px; }
@@ -61,11 +73,17 @@
   .rep { display: grid; gap: 4px; padding: 8px 0; border-bottom: 1px solid #eee; }
   .rep-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .rep-top span { flex: 1; font-weight: bold; font-size: 14px; }
+  .pastille { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #bbb; padding: 0; flex: none; }
+  .mini-pal { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 6px 0; }
+  .sw-rub { aspect-ratio: 1; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc; padding: 0; }
+  .sw-rub.sel { box-shadow: 0 0 0 3px #222; }
+  .mini-pal .defaut { grid-column: 1 / -1; }
+  .pt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
   .rep-top input { width: 130px; padding: 10px; font-size: 15px; }
   .rep small { color: #777; font-size: 12px; }
   .barre { height: 8px; background: #e6e6e6; border-radius: 4px; overflow: hidden; }
-  .barre i { display: block; height: 100%; background: var(--prim); }
-  .barre i.depasse { background: #c0392b; }
+  .barre i { display: block; height: 100%; background: var(--sc, var(--prim)); }
+  .rep small b { color: var(--sct); }
   .donut { width: 190px; height: 190px; margin: 4px auto; display: block; }
   .legende { display: grid; gap: 6px; }
   .legende div { display: flex; align-items: center; gap: 8px; font-size: 14px; }
@@ -106,8 +124,8 @@
   </div>
   <input id="a-prenom" placeholder="Votre prénom" maxlength="30" class="cache" autocomplete="given-name">
   <input id="a-mail" type="email" placeholder="Adresse e-mail" autocapitalize="none" autocomplete="email">
-  <input id="a-pass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password">
-  <input id="a-pass2" type="password" placeholder="Confirmer le mot de passe" class="cache" autocomplete="new-password">
+  <div class="mdp" id="w-pass"><input id="a-pass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password"><button type="button" class="oeil" data-pour="a-pass" aria-label="Afficher le mot de passe"></button></div>
+  <div class="mdp cache" id="w-pass2"><input id="a-pass2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password"><button type="button" class="oeil" data-pour="a-pass2" aria-label="Afficher le mot de passe"></button></div>
   <button class="btn" id="a-ok">Se connecter</button>
   <button class="lien" id="a-oubli">Mot de passe oublié ?</button>
   <button class="lien cache" id="a-retour">← Retour à la connexion</button>
@@ -119,8 +137,8 @@
 <div id="nouveau" class="page cache">
   <h2 style="text-align:center;color:var(--prim);margin-top:24px">Nouveau mot de passe</h2>
   <p class="note" style="text-align:center">Choisissez un nouveau mot de passe pour votre compte.</p>
-  <input id="n-pass" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password">
-  <input id="n-pass2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+  <div class="mdp"><input id="n-pass" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password"><button type="button" class="oeil" data-pour="n-pass" aria-label="Afficher le mot de passe"></button></div>
+  <div class="mdp"><input id="n-pass2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password"><button type="button" class="oeil" data-pour="n-pass2" aria-label="Afficher le mot de passe"></button></div>
   <button class="btn" id="n-ok">Enregistrer le mot de passe</button>
   <button class="lien" id="n-annuler">Annuler</button>
   <div id="n-msg" class="msg"></div>
@@ -146,6 +164,7 @@
   <!-- Onglet Dépenses -->
   <div id="p-dep" class="page">
     <div id="stats-dep" class="grille"></div>
+    <div id="jauge-dep" class="jauge"></div>
     <div id="avert" class="msg"></div>
     <h3>Nouvelle dépense</h3>
     <input id="desc" placeholder="Description (ex: Taxi)" maxlength="200">
@@ -170,7 +189,7 @@
     <div id="stats-bud" class="pile"></div>
     <div class="carte">
       <h3>Répartition par rubrique</h3>
-      <p class="note">Facultatif : fixez un budget pour chaque rubrique. Laissez vide pour ne pas en fixer.</p>
+      <p class="note">Facultatif : fixez un budget pour chaque rubrique. Touchez la pastille de couleur d’une rubrique pour changer sa couleur : elle est reprise dans les graphiques.</p>
       <div id="rep-liste"></div>
       <p id="rep-total" class="note"></p>
     </div>
@@ -274,7 +293,16 @@
 
   const CATS_DEFAUT = ['Transport', 'Nourriture', 'Factures', 'Santé', 'Loisirs', 'Épargne', 'Famille', 'Autre'];
   const NOMS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  const COULEURS = ['#0a7d3b','#1565c0','#e65100','#7b1fa2','#c62828','#00838f','#ad1457','#6d4c41','#455a64','#f9a825','#3949ab','#689f38'];
+  // Couleurs des rubriques (sans vert, jaune ni rouge : réservés à l'état du budget)
+  const PALETTE_RUB = [
+    { nom: 'Bleu', hex: '#1565c0' }, { nom: 'Bleu ciel', hex: '#29b6f6' }, { nom: 'Turquoise', hex: '#00acc1' },
+    { nom: 'Indigo', hex: '#3949ab' }, { nom: 'Violet', hex: '#8e24aa' }, { nom: 'Lavande', hex: '#b39ddb' },
+    { nom: 'Rose', hex: '#ec407a' }, { nom: 'Prune', hex: '#ad1457' }, { nom: 'Orange', hex: '#ef6c00' },
+    { nom: 'Marron', hex: '#6d4c41' }, { nom: 'Gris', hex: '#78909c' }, { nom: 'Charbon', hex: '#263238' }
+  ];
+  const DEFAUT_RUB = { 'Transport': '#1565c0', 'Nourriture': '#ef6c00', 'Factures': '#3949ab', 'Santé': '#ec407a',
+                       'Loisirs': '#8e24aa', 'Épargne': '#00acc1', 'Famille': '#6d4c41', 'Autre': '#78909c' };
+  const LIBRES_RUB = ['#29b6f6', '#ad1457', '#b39ddb', '#263238'];
   const STATUTS = { nouveau: 'Nouveau', en_cours: 'En cours', resolu: 'Résolu' };
 
   const THEMES = [
@@ -361,9 +389,42 @@
   let user = null, d = null, queue = [];
   let mois = aujourdhui().slice(0, 7);
   let sync = false, syncDemandee = false;
+  let rubOuverte = null;
+
+  // Couleur d'une rubrique : celle choisie par l'utilisateur, sinon une couleur par défaut
+  function couleurRub(nom) {
+    const c = d && d.couleurs && d.couleurs[nom];
+    if (c && PALETTE_RUB.some(p => p.hex === c)) return c;
+    if (DEFAUT_RUB[nom]) return DEFAUT_RUB[nom];
+    const i = d ? d.cats.indexOf(nom) : -1;
+    return i < 0 ? '#78909c' : LIBRES_RUB[i % LIBRES_RUB.length];
+  }
+  // État du budget : vert jusqu'à 75 %, jaune de 76 à 100 %, rouge au-delà
+  function statutBudget(b, t) {
+    if (b <= 0) return 'neutre';
+    const p = t / b * 100;
+    return p <= 75 ? 'vert' : (p <= 100 ? 'jaune' : 'rouge');
+  }
+
+  // ---------- Bouton œil (afficher / masquer le mot de passe) ----------
+  const ICONE_OEIL = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const ICONE_OEIL_BARRE = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  function reglerOeil(bouton, visible) {
+    const champ = $(bouton.dataset.pour);
+    champ.type = visible ? 'text' : 'password';
+    bouton.innerHTML = visible ? ICONE_OEIL_BARRE : ICONE_OEIL;
+    bouton.setAttribute('aria-label', visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+  }
+  document.querySelectorAll('.oeil').forEach(b => {
+    reglerOeil(b, false);
+    b.addEventListener('click', () => reglerOeil(b, $(b.dataset.pour).type === 'password'));
+  });
+  function masquerMotsDePasse() { document.querySelectorAll('.oeil').forEach(b => reglerOeil(b, false)); }
 
   function ecran(n) {
     ['chargement', 'auth', 'nouveau', 'app'].forEach(x => $(x).classList.toggle('cache', x !== n));
+    if (n !== 'auth' && n !== 'nouveau') masquerMotsDePasse();
   }
 
   function estReseau(e) {
@@ -387,8 +448,8 @@
   function modeAuth(m) {
     mode = m;
     $('a-prenom').classList.toggle('cache', m !== 'ins');
-    $('a-pass').classList.toggle('cache', m === 'oubli');
-    $('a-pass2').classList.toggle('cache', m !== 'ins');
+    $('w-pass').classList.toggle('cache', m === 'oubli');
+    $('w-pass2').classList.toggle('cache', m !== 'ins');
     $('a-oubli').classList.toggle('cache', m !== 'con');
     $('a-retour').classList.toggle('cache', m !== 'oubli');
     $('a-ok').textContent = { con: 'Se connecter', ins: 'Créer mon compte', oubli: 'Envoyer le lien' }[m];
@@ -545,7 +606,7 @@
 
   // ---------- Profil (local + serveur) ----------
   function sauverProfilLocal() {
-    if (user && d) LS.set('p_' + user.id, { prenom: d.prenom, cats: d.cats, theme: d.theme, avatar: d.avatar });
+    if (user && d) LS.set('p_' + user.id, { prenom: d.prenom, cats: d.cats, theme: d.theme, avatar: d.avatar, couleurs: d.couleurs });
   }
   function patchEnAttente() {
     const p = {};
@@ -559,12 +620,13 @@
     if (!('cats' in p)) d.cats = s.cats || [];
     if (s.theme && !('theme' in p)) d.theme = s.theme;
     if (!('avatar' in p)) d.avatar = s.avatar || null;
+    if (!('couleurs' in p)) d.couleurs = s.couleurs || {};
   }
   async function chargerProfil() {
     if (!navigator.onLine || !user) return;
     const uid = user.id;
     try {
-      const { data, error } = await sb.from('profils').select('prenom,cats,theme,avatar').eq('id', uid).maybeSingle();
+      const { data, error } = await sb.from('profils').select('prenom,cats,theme,avatar,couleurs').eq('id', uid).maybeSingle();
       if (error) throw error;
       if (!user || user.id !== uid) return;
       appliquerProfilServeur(data);
@@ -744,6 +806,7 @@
       cats: pc.cats || [],
       theme: pc.theme || localStorage.getItem('theme') || 'vert',
       avatar: pc.avatar || null,
+      couleurs: pc.couleurs || {},
       depenses: [], budget: 0, budrub: {}
     };
     Object.assign(d, patchEnAttente());
@@ -769,6 +832,7 @@
     });
     $('barre-mois').classList.toggle('cache', n === 'aide' || n === 'profil');
     window.scrollTo(0, 0);
+    rubOuverte = null;
     if (d) {
       tout();
       if (n === 'aide') chargerReclamations();
@@ -811,33 +875,43 @@
     majVue();
     $('mois-lib').textContent = libMois(mois);
     const b = d.budget, t = totalMois(), r = b - t;
-    const cl = r < 0 ? 'neg' : 'ok';
+    const st = statutBudget(b, t);
+    const pct = b > 0 ? t / b * 100 : 0;
     const par = parCat(d.depenses);
 
     $('stats-dep').innerHTML =
-      '<div class="stat"><small>Budget</small><b>' + fcfa(b) + '</b></div>' +
+      '<div class="stat s-' + st + '"><small>Budget</small><b>' + fcfa(b) + '</b></div>' +
       '<div class="stat"><small>Dépensé</small><b>' + fcfa(t) + '</b></div>' +
-      '<div class="stat ' + cl + '"><small>Reste</small><b>' + fcfa(r) + '</b></div>';
+      '<div class="stat s-' + st + '"><small>Reste</small><b>' + fcfa(r) + '</b></div>';
+    $('jauge-dep').className = 'jauge s-' + st;
+    $('jauge-dep').innerHTML = b > 0
+      ? '<div class="barre"><i style="width:' + Math.min(100, pct) + '%"></i></div><small>' + Math.round(pct) + ' % du budget utilisé</small>' : '';
 
     $('stats-bud').innerHTML =
-      '<div class="stat grand"><small>Budget de ' + libMois(mois) + '</small><b>' + fcfa(b) + '</b></div>' +
-      '<div class="stat grand ' + cl + '"><small>Reste</small><b>' + fcfa(r) + '</b><small style="margin-top:4px">Dépensé : ' + fcfa(t) + '</small></div>';
+      '<div class="stat grand s-' + st + '"><small>Budget de ' + libMois(mois) + '</small><b>' + fcfa(b) + '</b></div>' +
+      '<div class="stat grand s-' + st + '"><small>Reste</small><b>' + fcfa(r) + '</b>' +
+      (b > 0 ? '<div class="jauge" style="margin-top:6px"><div class="barre"><i style="width:' + Math.min(100, pct) + '%"></i></div><small>' + Math.round(pct) + ' % utilisé</small></div>' : '') +
+      '<small style="margin-top:4px">Dépensé : ' + fcfa(t) + '</small></div>';
 
-    $('avert').textContent = b === 0 ? 'Définissez votre budget dans l’onglet Budget.'
-      : (r < 0 ? 'Attention : budget dépassé de ' + fcfa(-r) + '.' : '');
+    let av = '', avCl = 'msg';
+    if (b === 0) av = 'Définissez votre budget dans l’onglet Budget.';
+    else if (st === 'rouge') { av = 'Attention : budget dépassé de ' + fcfa(-r) + '.'; avCl = 'msg s-rouge'; }
+    else if (st === 'jaune') { av = 'Attention : ' + Math.round(pct) + ' % de votre budget est déjà utilisé.'; avCl = 'msg s-jaune'; }
+    $('avert').className = avCl;
+    $('avert').textContent = av;
     $('b-val').placeholder = 'Budget de ' + libMois(mois) + ' en FCFA';
 
     const l = catsListe();
     remplirSelect($('cat'), l, '');
     remplirSelect($('filtre'), l, 'Toutes les rubriques');
 
-    $('resume').innerHTML = Object.keys(par).map(k => '<div class="chip">' + esc(k) + ' : <b>' + fcfa(par[k]) + '</b></div>').join('')
+    $('resume').innerHTML = Object.keys(par).map(k => '<div class="chip"><i class="pt" style="background:' + couleurRub(k) + '"></i>' + esc(k) + ' : <b>' + fcfa(par[k]) + '</b></div>').join('')
       || '<div class="note">Aucune dépense ce mois-ci.</div>';
 
     const fl = $('filtre').value;
     const lignes = d.depenses.filter(x => !fl || x.cat === fl);
     $('liste').innerHTML = lignes.length ? lignes.map(x =>
-      '<li><span>' + esc(x.desc) + '<small>' + dateFr(x.date) + '</small><span class="tag">' + esc(x.cat) + '</span>' +
+      '<li><span>' + esc(x.desc) + '<small>' + dateFr(x.date) + '</small><span class="tag"><i class="pt" style="background:' + couleurRub(x.cat) + '"></i>' + esc(x.cat) + '</span>' +
       (x.attente ? '<span class="attente" title="En attente d’envoi">⏳</span>' : '') + '</span>' +
       '<div><span class="montant">' + fcfa(x.montant) + '</span>' +
       '<button class="sup" onclick="supprimer(\'' + (x.cid || '') + '\',' + (x.id === null ? 'null' : x.id) + ')">✕</button></div></li>'
@@ -845,9 +919,9 @@
 
     renderRepartition(par);
 
-    $('rub-liste').innerHTML = CATS_DEFAUT.map(x => '<span class="tag">' + esc(x) + '</span>').join(' ') +
+    $('rub-liste').innerHTML = CATS_DEFAUT.map(x => '<span class="tag"><i class="pt" style="background:' + couleurRub(x) + '"></i>' + esc(x) + '</span>').join(' ') +
       (d.cats.length ? '<p class="note" style="margin-top:8px">Vos rubriques (✕ pour supprimer) :</p>' +
-        d.cats.map((x, i) => '<span class="tag">' + esc(x) + '<button class="sup" onclick="supprimerCat(' + i + ')">✕</button></span>').join(' ') : '');
+        d.cats.map((x, i) => '<span class="tag"><i class="pt" style="background:' + couleurRub(x) + '"></i>' + esc(x) + '<button class="sup" onclick="supprimerCat(' + i + ')">✕</button></span>').join(' ') : '');
 
     $('rap-contenu').innerHTML = '<h3>' + libMois(mois) + '</h3>' +
       '<p>Budget : <b>' + fcfa(b) + '</b></p><p>Dépensé : <b>' + fcfa(t) + '</b></p><p>Reste : <b>' + fcfa(r) + '</b></p>' +
@@ -870,15 +944,40 @@
       const dep = par[nom] || 0;
       const reste = bud - dep;
       const pct = bud > 0 ? Math.min(100, dep / bud * 100) : 0;
-      return '<div class="rep"><div class="rep-top"><span>' + esc(nom) + '</span>' +
+      const st = statutBudget(bud, dep);
+      const col = couleurRub(nom);
+      return '<div class="rep s-' + st + '"><div class="rep-top">' +
+        '<button class="pastille" data-c="' + esc(nom) + '" style="background:' + col + '" aria-label="Changer la couleur de ' + esc(nom) + '"></button>' +
+        '<span>' + esc(nom) + '</span>' +
         '<input class="rep-in" type="number" inputmode="numeric" placeholder="Budget" data-r="' + esc(nom) + '" value="' + (bud || '') + '"></div>' +
-        (bud > 0 ? '<div class="barre"><i class="' + (reste < 0 ? 'depasse' : '') + '" style="width:' + pct + '%"></i></div>' : '') +
-        '<small>Dépensé : ' + fcfa(dep) + (bud > 0 ? ' · Reste : <b class="' + (reste < 0 ? 'rouge' : '') + '">' + fcfa(reste) + '</b>' : '') + '</small></div>';
+        (rubOuverte === nom ? miniPalette(nom, col) : '') +
+        (bud > 0 ? '<div class="barre"><i style="width:' + pct + '%"></i></div>' : '') +
+        '<small>Dépensé : ' + fcfa(dep) + (bud > 0 ? ' · Reste : <b>' + fcfa(reste) + '</b>' : '') + '</small></div>';
     }).join('');
     const b = d.budget;
     $('rep-total').innerHTML = 'Réparti : <b>' + fcfa(somme) + '</b>' +
       (b ? ' sur ' + fcfa(b) + ' (non réparti : <b class="' + (b - somme < 0 ? 'rouge' : '') + '">' + fcfa(b - somme) + '</b>)' : '');
   }
+  function miniPalette(nom, col) {
+    return '<div class="mini-pal">' + PALETTE_RUB.map(p =>
+      '<button class="sw-rub' + (p.hex === col ? ' sel' : '') + '" data-c="' + esc(nom) + '" data-h="' + p.hex + '" style="background:' + p.hex +
+      '" title="' + p.nom + '" aria-label="' + p.nom + '"></button>').join('') +
+      '<button class="lien defaut" data-c="' + esc(nom) + '" data-h="">Couleur par défaut</button></div>';
+  }
+  function choisirCouleurRub(nom, hex) {
+    const c = Object.assign({}, d.couleurs);
+    if (hex && PALETTE_RUB.some(p => p.hex === hex)) c[nom] = hex; else delete c[nom];
+    d.couleurs = c;
+    rubOuverte = null;
+    sauverProfilLocal();
+    ajouterOp({ op: 'prof', patch: { couleurs: c } });
+  }
+  $('rep-liste').addEventListener('click', e => {
+    const pastille = e.target.closest('.pastille');
+    if (pastille) { rubOuverte = rubOuverte === pastille.dataset.c ? null : pastille.dataset.c; tout(); return; }
+    const choix = e.target.closest('.sw-rub, .defaut');
+    if (choix) choisirCouleurRub(choix.dataset.c, choix.dataset.h);
+  });
   $('rep-liste').addEventListener('change', e => {
     const el = e.target;
     if (!el.classList.contains('rep-in')) return;
@@ -894,13 +993,13 @@
     const R = 15.9155;
     const arcs = cles.map((k, i) => {
       const p = par[k] / total * 100;
-      const s = '<circle r="' + R + '" cx="21" cy="21" fill="transparent" stroke="' + COULEURS[i % COULEURS.length] +
+      const s = '<circle r="' + R + '" cx="21" cy="21" fill="transparent" stroke="' + couleurRub(k) +
         '" stroke-width="6" stroke-dasharray="' + p + ' ' + (100 - p) + '" stroke-dashoffset="' + (25 - cum) + '"></circle>';
       cum += p;
       return s;
     }).join('');
     const legende = cles.map((k, i) =>
-      '<div><i style="background:' + COULEURS[i % COULEURS.length] + '"></i><span>' + esc(k) + '</span><b>' + fcfa(par[k]) + '</b><small>' + Math.round(par[k] / total * 100) + ' %</small></div>').join('');
+      '<div><i style="background:' + couleurRub(k) + '"></i><span>' + esc(k) + '</span><b>' + fcfa(par[k]) + '</b><small>' + Math.round(par[k] / total * 100) + ' %</small></div>').join('');
     return '<svg class="donut" viewBox="0 0 42 42" role="img" aria-label="Répartition des dépenses par rubrique">' + arcs +
       '<text x="21" y="21.5" text-anchor="middle" font-size="4" font-weight="bold" fill="#222">' + Math.round(total).toLocaleString('fr-FR') + '</text>' +
       '<text x="21" y="26" text-anchor="middle" font-size="2.8" fill="#777">FCFA</text></svg>' +
@@ -940,8 +1039,8 @@
       '<p>Moyenne par jour : <b>' + fcfa(t / ecoules) + '</b></p>' +
       '<p>Rubrique principale : <b>' + esc(top) + '</b> (' + Math.round(par[top] / t * 100) + ' %)</p>' +
       '<p>Plus grosse dépense : <b>' + fcfa(plusGrosse.montant) + '</b> · ' + esc(plusGrosse.desc) + '</p>' +
-      (bud > 0 ? '<p>Budget utilisé : <b class="' + (t > bud ? 'rouge' : '') + '">' + Math.round(t / bud * 100) + ' %</b></p>' +
-        '<div class="barre"><i class="' + (t > bud ? 'depasse' : '') + '" style="width:' + Math.min(100, t / bud * 100) + '%"></i></div>' : '') +
+      (bud > 0 ? '<div class="jauge s-' + statutBudget(bud, t) + '"><small>Budget utilisé : ' + Math.round(t / bud * 100) + ' %</small>' +
+        '<div class="barre"><i style="width:' + Math.min(100, t / bud * 100) + '%"></i></div></div>' : '') +
       '</div>' +
       '<div class="carte"><h3>Répartition par rubrique</h3>' + donut(par, t) + '</div>' +
       '<div class="carte"><h3>Dépenses par jour</h3>' + barresJours(jours) +
