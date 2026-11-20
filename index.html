@@ -31,6 +31,22 @@
   .mdp { position: relative; }
   .mdp input { padding-right: 54px; }
   .oeil { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: #777; padding: 10px 12px; line-height: 0; }
+  .accord { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; text-align: left; }
+  .accord input { width: 22px; height: 22px; padding: 0; flex: none; margin-top: 1px; }
+  .accord .lien { padding: 0; font-size: 14px; }
+  .pol { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; justify-content: center; }
+  .pol-in { background: #fff; width: 100%; max-width: 720px; max-height: 92%; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; }
+  .pol-tete { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eee; }
+  .pol-tete b { color: var(--prim); font-size: 17px; }
+  .pol-tete button { background: none; border: 0; font-size: 24px; padding: 4px 10px; color: #555; }
+  .pol-corps { overflow-y: auto; padding: 12px 16px 28px; font-size: 14px; line-height: 1.55; }
+  .pol-corps p { margin: 6px 0; }
+  .pol-corps h3 { margin: 18px 0 6px; font-size: 15px; }
+  .pol-corps ul { list-style: disc; padding-left: 20px; display: block; }
+  .pol-corps li { display: list-item; background: none; padding: 2px 0; border-radius: 0; }
+  .pol-corps .pol-date { color: #777; font-size: 12px; }
+  .pol-resume { background: var(--clair); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+  .pol-resume small { color: #555; }
   .lien { background: none; border: 0; color: var(--prim); text-decoration: underline; font-size: 14px; padding: 6px; }
   .carte { background: #fff; border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
   .grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -133,11 +149,31 @@
   <input id="a-mail" type="email" placeholder="Adresse e-mail" autocapitalize="none" autocomplete="email">
   <div class="mdp" id="w-pass"><input id="a-pass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password"><button type="button" class="oeil" data-pour="a-pass" aria-label="Afficher le mot de passe"></button></div>
   <div class="mdp cache" id="w-pass2"><input id="a-pass2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password"><button type="button" class="oeil" data-pour="a-pass2" aria-label="Afficher le mot de passe"></button></div>
+  <label id="w-accord" class="accord cache"><input type="checkbox" id="a-accord"><span>J’ai lu et j’accepte la <button type="button" class="lien" id="a-pol">politique de confidentialité</button>.</span></label>
   <button class="btn" id="a-ok">Se connecter</button>
   <button class="lien" id="a-oubli">Mot de passe oublié ?</button>
   <button class="lien cache" id="a-retour">← Retour à la connexion</button>
   <div id="a-msg" class="msg"></div>
   <div id="a-info" class="info"></div>
+  <button class="lien" id="a-pol-lien">Politique de confidentialité</button>
+</div>
+
+<!-- ===== ACCEPTATION DE LA POLITIQUE ===== -->
+<div id="accord" class="page cache">
+  <h2 style="text-align:center;color:var(--prim);margin-top:24px">Politique de confidentialité</h2>
+  <p class="note" style="text-align:center">Pour continuer à utiliser Mes Dépenses, merci de lire et d’accepter notre politique de confidentialité.</p>
+  <div class="carte">
+    <ul style="list-style:disc;padding-left:18px;display:block;font-size:14px;line-height:1.6">
+      <li style="display:list-item;background:none;padding:0;border-radius:0">Vos données servent uniquement à faire fonctionner l’application pour vous.</li>
+      <li style="display:list-item;background:none;padding:0;border-radius:0">Elles ne sont ni vendues, ni partagées, ni divulguées à des tiers.</li>
+      <li style="display:list-item;background:none;padding:0;border-radius:0">Vous pouvez supprimer votre compte et vos données à tout moment.</li>
+    </ul>
+    <button class="btn clair" id="g-pol">Lire la politique complète</button>
+  </div>
+  <label class="accord"><input type="checkbox" id="g-accord"><span>J’ai lu et j’accepte la politique de confidentialité.</span></label>
+  <button class="btn" id="g-ok">Accepter et continuer</button>
+  <button class="lien" id="g-refus">Refuser et me déconnecter</button>
+  <div id="g-msg" class="msg"></div>
 </div>
 
 <!-- ===== NOUVEAU MOT DE PASSE ===== -->
@@ -239,6 +275,7 @@
     </div>
     <div class="carte">
       <h3>Questions fréquentes</h3>
+      <p><b>Mes données sont-elles partagées ?</b><br>Non : elles ne sont ni vendues, ni partagées, ni divulguées à des tiers. Vous pouvez lire la politique complète depuis votre profil.</p>
       <p><b>Où sont mes données ?</b><br>Dans votre compte, en ligne. Connectez-vous avec le même e-mail sur un autre appareil pour les retrouver.</p>
       <p><b>Et sans connexion internet ?</b><br>Vous pouvez saisir vos dépenses et votre budget. Ils sont envoyés automatiquement dès que le réseau revient.</p>
       <p><b>J’ai oublié mon mot de passe</b><br>Sur l’écran de connexion, touchez « Mot de passe oublié ? » et suivez le lien reçu par e-mail.</p>
@@ -261,6 +298,11 @@
       <button class="btn clair" id="p-prenom-ok">Enregistrer le prénom</button>
     </div>
     <div class="carte">
+      <h3>Mes données</h3>
+      <button class="btn clair" id="p-pol">Lire la politique de confidentialité</button>
+      <button class="btn clair" id="p-supprimer" style="color:#c62828;border-color:#c62828">Supprimer mon compte et mes données</button>
+    </div>
+    <div class="carte">
       <h3>Couleur de l’application</h3>
       <p class="note">Couleurs unies</p>
       <div id="pal-uni" class="palette"></div>
@@ -276,6 +318,102 @@
     <button id="n-rap">📄<br>Rapport</button>
     <button id="n-aide">🛟<br>Aide</button>
   </nav>
+</div>
+
+<!-- Politique de confidentialité (fenêtre de lecture) -->
+<div id="pol" class="pol cache" role="dialog" aria-modal="true" aria-label="Politique de confidentialité">
+  <div class="pol-in">
+    <div class="pol-tete"><b>Politique de confidentialité</b><button id="pol-fermer" aria-label="Fermer">✕</button></div>
+    <div class="pol-corps">
+<p class="pol-date">Version du 20 novembre 2026</p>
+<p>Cette politique explique quelles données l’application <b>Mes Dépenses</b> collecte, pourquoi, comment elles sont protégées et quels sont vos droits. En créant un compte, vous déclarez l’avoir lue et vous l’acceptez.</p>
+
+<div class="pol-resume">
+  <b>En résumé</b>
+  <ul>
+    <li>Vos données servent uniquement à faire fonctionner l’application pour vous.</li>
+    <li>Elles ne sont ni vendues, ni louées, ni partagées, ni divulguées à des tiers.</li>
+    <li>Aucune publicité, aucun suivi publicitaire.</li>
+    <li>Vous pouvez supprimer votre compte et toutes vos données à tout moment.</li>
+  </ul>
+  <small>Les seules exceptions, strictement limitées, sont décrites à l’article 5.</small>
+</div>
+
+<h3>1. Qui est responsable de vos données ?</h3>
+<p>L’application « Mes Dépenses » est éditée par <b>Wilfried DJEDJE</b>, à Abidjan (Côte d’Ivoire). Pour toute question sur vos données : <b>armandzpassur@gmail.com</b> ou WhatsApp au <b>+225 07 09 04 76 68</b>.</p>
+
+<h3>2. Quelles données collectons-nous ?</h3>
+<ul>
+  <li><b>Votre compte :</b> prénom, adresse e-mail et mot de passe. Le mot de passe n’est jamais enregistré en clair : il est transformé de façon irréversible par le service d’authentification.</li>
+  <li><b>Ce que vous saisissez :</b> vos dépenses (description, montant, rubrique, date), vos budgets du mois, vos budgets par rubrique et vos rubriques personnalisées.</li>
+  <li><b>Vos préférences :</b> couleur de l’interface, couleurs des rubriques et photo de profil (facultative, réduite avant d’être enregistrée dans votre profil).</li>
+  <li><b>Vos réclamations :</b> sujet, message, adresse e-mail et réponse du support.</li>
+  <li><b>Votre acceptation :</b> la version et la date d’acceptation de cette politique.</li>
+  <li><b>Des données techniques :</b> pour assurer la connexion et la sécurité, l’hébergeur peut enregistrer des informations techniques, comme l’adresse IP et l’heure de connexion.</li>
+</ul>
+<p>Nous n’accédons ni à votre position, ni à vos contacts, ni à votre micro, ni à votre appareil photo (en dehors de la photo de profil que vous choisissez vous-même). Nous ne collectons aucune donnée bancaire : ni numéro de carte, ni numéro de compte.</p>
+
+<h3>3. Pourquoi utilisons-nous ces données ?</h3>
+<ul>
+  <li>Créer et sécuriser votre compte.</li>
+  <li>Enregistrer, calculer et afficher vos budgets, dépenses, graphiques et rapports.</li>
+  <li>Retrouver les mêmes informations sur tous vos appareils.</li>
+  <li>Vous envoyer l’e-mail de récupération de mot de passe.</li>
+  <li>Répondre à vos réclamations et vous aider.</li>
+  <li>Assurer la sécurité et le bon fonctionnement de l’application.</li>
+</ul>
+<p>Nous n’utilisons jamais vos données pour de la publicité, du profilage ou de la revente.</p>
+
+<h3>4. Sur quelle base ?</h3>
+<p>Le traitement de vos données repose sur votre consentement (l’acceptation de la présente politique) et sur ce qui est nécessaire pour vous fournir le service que vous avez demandé.</p>
+
+<h3>5. Vos données sont-elles partagées ?</h3>
+<p><b>Non.</b> Vos données ne sont ni vendues, ni louées, ni partagées, ni divulguées à des tiers à des fins commerciales, publicitaires ou autres. Les seules exceptions sont les suivantes :</p>
+<ul>
+  <li><b>Les prestataires techniques</b> qui font fonctionner l’application pour notre compte, et uniquement pour cela : <b>Supabase</b> (stockage des données et authentification), <b>Google / Gmail</b> (envoi de l’e-mail de récupération de mot de passe), <b>GitHub Pages</b> (hébergement de l’application) et <b>jsDelivr</b> (diffusion d’un composant de l’application). Ils peuvent stocker ou traiter des données sur des serveurs situés en dehors de la Côte d’Ivoire.</li>
+  <li><b>Une obligation légale :</b> une demande officielle d’une autorité judiciaire ou administrative compétente.</li>
+  <li><b>Les liens externes que vous choisissez d’ouvrir</b> : le bouton « Don » (Wave), WhatsApp ou votre messagerie. Ces services appliquent leurs propres règles, et l’application ne leur transmet aucune de vos données.</li>
+</ul>
+<p><b>Accès par l’éditeur.</b> En tant qu’administrateur technique, l’éditeur peut techniquement accéder aux données stockées. Il ne le fait que pour le support (par exemple pour traiter une réclamation), la sécurité et la maintenance, et s’interdit de consulter vos données à d’autres fins.</p>
+
+<h3>6. Comment vos données sont-elles protégées ?</h3>
+<ul>
+  <li>Les échanges sont chiffrés (HTTPS).</li>
+  <li>Les mots de passe sont protégés et illisibles, y compris pour l’éditeur.</li>
+  <li>Chaque compte est isolé : des règles d’accès au niveau de la base de données empêchent un utilisateur de voir ou de modifier les données d’un autre.</li>
+  <li>Pour fonctionner sans connexion internet, l’application garde une copie de vos données sur votre appareil. Elle est effacée quand vous vous déconnectez.</li>
+</ul>
+<p>Aucun système n’est totalement infaillible. Protégez votre appareil et ne communiquez jamais votre mot de passe. Si une faille affectait vos données, nous vous en informerions dans les meilleurs délais.</p>
+
+<h3>7. Combien de temps les conservons-nous ?</h3>
+<p>Tant que votre compte existe. Si vous supprimez votre compte, vos données (profil, dépenses, budgets, réclamations) sont supprimées immédiatement et définitivement. Les éventuelles copies techniques de l’hébergeur sont effacées selon ses propres délais.</p>
+
+<h3>8. Quels sont vos droits ?</h3>
+<ul>
+  <li><b>Accès :</b> toutes vos données sont visibles dans l’application, et le rapport mensuel peut être téléchargé.</li>
+  <li><b>Rectification :</b> vous pouvez modifier votre prénom, vos dépenses, vos budgets et vos rubriques à tout moment.</li>
+  <li><b>Suppression et retrait du consentement :</b> dans la page Profil, bouton « Supprimer mon compte et mes données ».</li>
+  <li><b>Copie de vos données :</b> sur simple demande à l’adresse de contact ci-dessus.</li>
+</ul>
+<p>Nous répondons à toute demande dans un délai maximum de 30 jours. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l’autorité ivoirienne chargée de la protection des données personnelles (ARTCI).</p>
+
+<h3>9. Mineurs</h3>
+<p>L’application est destinée aux personnes en âge de gérer leur budget. Un mineur doit l’utiliser avec l’accord de son parent ou de son représentant légal.</p>
+
+<h3>10. Stockage sur votre appareil</h3>
+<p>L’application n’utilise aucun cookie publicitaire ni outil de suivi. Elle enregistre sur votre appareil des informations techniques nécessaires à son fonctionnement : votre session, vos préférences et, pour le mode hors connexion, une copie de vos données.</p>
+
+<h3>11. Dons</h3>
+<p>Les dons sont libres et facultatifs. Le paiement est géré entièrement par Wave : l’application ne reçoit ni ne conserve aucune donnée de paiement.</p>
+
+<h3>12. Modifications de cette politique</h3>
+<p>Cette politique peut évoluer. La date de version figure en haut de la page. En cas de changement important, une nouvelle acceptation vous sera demandée.</p>
+
+<h3>13. Contact</h3>
+<p>Une question, une demande ? <b>armandzpassur@gmail.com</b> · WhatsApp <b>+225 07 09 04 76 68</b>, ou le formulaire de réclamation de l’onglet Aide.</p>
+
+    </div>
+  </div>
 </div>
 
 <!-- Bouton don -->
@@ -298,6 +436,7 @@
   };
   // ==============================
 
+  const POLITIQUE_VERSION = '2026-11-20';
   const CATS_DEFAUT = ['Transport', 'Nourriture', 'Factures', 'Santé', 'Loisirs', 'Épargne', 'Famille', 'Autre'];
   const NOMS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   // Couleurs des rubriques (sans vert, jaune ni rouge : réservés à l'état du budget)
@@ -432,7 +571,7 @@
   function masquerMotsDePasse() { document.querySelectorAll('.oeil').forEach(b => reglerOeil(b, false)); }
 
   function ecran(n) {
-    ['chargement', 'auth', 'nouveau', 'app'].forEach(x => $(x).classList.toggle('cache', x !== n));
+    ['chargement', 'auth', 'accord', 'nouveau', 'app'].forEach(x => $(x).classList.toggle('cache', x !== n));
     if (n !== 'auth' && n !== 'nouveau') masquerMotsDePasse();
   }
 
@@ -459,6 +598,7 @@
     $('a-prenom').classList.toggle('cache', m !== 'ins');
     $('w-pass').classList.toggle('cache', m === 'oubli');
     $('w-pass2').classList.toggle('cache', m !== 'ins');
+    $('w-accord').classList.toggle('cache', m !== 'ins');
     $('a-oubli').classList.toggle('cache', m !== 'con');
     $('a-retour').classList.toggle('cache', m !== 'oubli');
     $('a-ok').textContent = { con: 'Se connecter', ins: 'Créer mon compte', oubli: 'Envoyer le lien' }[m];
@@ -484,6 +624,7 @@
       prenom = $('a-prenom').value.trim();
       if (prenom.length < 2) { msg('Saisissez votre prénom.'); return; }
       if (mdp !== $('a-pass2').value) { msg('Les deux mots de passe sont différents.'); return; }
+      if (!$('a-accord').checked) { msg('Vous devez accepter la politique de confidentialité pour créer un compte.'); return; }
     }
     if (!navigator.onLine) { msg('Une connexion internet est nécessaire pour se connecter.'); return; }
     $('a-ok').disabled = true;
@@ -493,7 +634,7 @@
         if (error) throw error;
         $('a-info').textContent = 'Si cette adresse a un compte, un e-mail avec un lien vient d’être envoyé. Pensez à regarder dans les courriers indésirables.';
       } else if (mode === 'ins') {
-        const { data, error } = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { prenom: prenom } } });
+        const { data, error } = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { prenom: prenom, politique_version: POLITIQUE_VERSION, politique_date: new Date().toISOString() } } });
         if (error) throw error;
         if (!data.session) $('a-info').textContent = 'Compte créé. Vérifiez votre e-mail pour confirmer votre adresse.';
       } else {
@@ -800,13 +941,75 @@
     if (queue.length) synchroniser(); else rafraichir();
   }
 
-  window.addEventListener('online', () => { majEtat(); actualiser(); });
+  window.addEventListener('online', () => { majEtat(); actualiser(); synchroConsentement(); });
   window.addEventListener('offline', majEtat);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { salut(); actualiser(); } });
   setInterval(() => { if (user && queue.length) synchroniser(); }, 20000);
 
   // ---------- Session ----------
+  // ---------- Politique de confidentialité ----------
+  let accordEnAttente = null;
+  function consentementOk(u) {
+    const meta = u.user_metadata || {};
+    const loc = LS.get('pol_' + u.id, null);
+    return meta.politique_version === POLITIQUE_VERSION || !!(loc && loc.version === POLITIQUE_VERSION);
+  }
+  async function synchroConsentement() {
+    if (!user || !navigator.onLine) return;
+    const meta = user.user_metadata || {};
+    if (meta.politique_version === POLITIQUE_VERSION) return;
+    const loc = LS.get('pol_' + user.id, null);
+    if (!loc || loc.version !== POLITIQUE_VERSION) return;
+    const { error } = await sb.auth.updateUser({ data: { politique_version: POLITIQUE_VERSION, politique_date: loc.date } });
+    if (!error) user.user_metadata = Object.assign({}, meta, { politique_version: POLITIQUE_VERSION, politique_date: loc.date });
+  }
+  function ouvrirPolitique() { $('pol').classList.remove('cache'); $('pol').querySelector('.pol-corps').scrollTop = 0; }
+  function fermerPolitique() { $('pol').classList.add('cache'); }
+  ['a-pol', 'a-pol-lien', 'g-pol', 'p-pol'].forEach(id => { $(id).onclick = ouvrirPolitique; });
+  $('pol-fermer').onclick = fermerPolitique;
+  $('pol').addEventListener('click', e => { if (e.target === $('pol')) fermerPolitique(); });
+
+  $('g-ok').onclick = () => {
+    if (!$('g-accord').checked) { $('g-msg').textContent = 'Cochez la case pour continuer.'; return; }
+    const u = accordEnAttente;
+    if (!u) return;
+    LS.set('pol_' + u.id, { version: POLITIQUE_VERSION, date: new Date().toISOString() });
+    accordEnAttente = null;
+    $('g-accord').checked = false; $('g-msg').textContent = '';
+    demarrerSession(u);
+  };
+  $('g-refus').onclick = async () => {
+    accordEnAttente = null; user = null;
+    $('g-accord').checked = false; $('g-msg').textContent = '';
+    await sb.auth.signOut({ scope: 'local' });
+  };
+
+  // Suppression du compte et de toutes les données (fonction SQL « supprimer_mon_compte »)
+  $('p-supprimer').onclick = async () => {
+    if (!user) return;
+    if (!navigator.onLine) { alert('Une connexion internet est nécessaire pour supprimer votre compte.'); return; }
+    const rep = prompt('Cette action supprime DÉFINITIVEMENT votre compte et toutes vos données (dépenses, budgets, réclamations).\n\nPour confirmer, tapez SUPPRIMER :');
+    if (!rep || rep.trim().toUpperCase() !== 'SUPPRIMER') return;
+    const { error } = await sb.rpc('supprimer_mon_compte');
+    if (error) { erreur(error); return; }
+    const uid = user.id;
+    queue = [];
+    nettoyerLocal(uid);
+    LS.del('pol_' + uid);
+    await sb.auth.signOut({ scope: 'local' });
+    alert('Votre compte et vos données ont été supprimés.');
+  };
+
   async function ouvrirSession(u) {
+    if (!consentementOk(u)) {
+      user = u; accordEnAttente = u;
+      ecran('accord');
+      return;
+    }
+    await demarrerSession(u);
+  }
+
+  async function demarrerSession(u) {
     user = u;
     queue = LS.get('q_' + u.id, []);
     const pc = LS.get('p_' + u.id, {});
@@ -826,6 +1029,7 @@
     onglet('dep');
     appliquerTheme(d.theme);
     salut(); majAvatar(); majEtat(); tout();
+    synchroConsentement();
     await chargerProfil();
     if (!user || user.id !== u.id) return;
     await chargerMois();
